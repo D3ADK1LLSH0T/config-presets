@@ -1,0 +1,37 @@
+{
+  "schemaVersion": 1,
+  "id": "configpresets",
+  "version": "0.1",
+  "name": "Config Presets",
+  "description": "Create, manage, and switch between configuration presets that capture Minecraft options, mod configurations, and enabled resource packs.",
+  "authors": [
+    "D3ADK1LLSH0T"
+  ],
+  "contact": {
+    "sources": "https://github.com/D3ADK1LLSH0T/config-presets"
+  },
+  "license": "MIT",
+  "icon": "assets/configpresets/icon.png",
+  "environment": "client",
+  "entrypoints": {
+    "client": [
+      "com.configpresets.ConfigPresetsMod"
+    ],
+    "modmenu": [
+      "com.configpresets.ModMenuIntegration"
+    ]
+  },
+  "mixins": [
+    "configpresets.mixins.json"
+  ],
+  "depends": {
+    "fabricloader": ">=0.19.3",
+    "minecraft": "~26.1",
+    "java": ">=25",
+    "fabric-api": "*",
+    "cloth-config": "*"
+  },
+  "suggests": {
+    "modmenu": "*"
+  }
+}
