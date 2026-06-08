@@ -1,0 +1,56 @@
+name: Sync Files Across Branches
+
+on:
+  push:
+    branches:
+      - fabric-26.X # Triggers when you edit files on your main branch
+    paths:
+      - 'README.md' # Tracks the README file
+      - 'LICENSE'   # Tracks the LICENSE file
+
+jobs:
+  sync-files:
+    runs-on: ubuntu-latest
+    
+    permissions:
+      contents: write # Allows the script to push updates to your branches
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # Fetches history for all branches
+
+      - name: Configure Git Bot
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "41898282+github-actions[bot]@://github.com"
+
+      - name: Sync Files to Target Branch
+        run: |
+          TARGET_BRANCH="prod" # CHANGE THIS to your other branch name
+          
+          # List all files you want to sync, separated by spaces
+          FILES_TO_SYNC=("README.md" "LICENSE")
+          
+          echo "Switching to target branch: $TARGET_BRANCH"
+          git checkout $TARGET_BRANCH
+          
+          # Loop through each file and pull it from the main branch
+          for FILE in "${FILES_TO_SYNC[@]}"; do
+            if [ -f "$FILE" ] || git log -1 -- main -- "$FILE" >/dev/null 2>&1; then
+              echo "Pulling latest version of $FILE from main branch"
+              git checkout main -- "$FILE"
+            else
+              echo "Warning: $FILE does not exist on main branch yet. Skipping."
+            fi
+          done
+          
+          # Check if any of the files actually changed to avoid empty commit errors
+          if git diff --quiet --staged; then
+            echo "No changes detected in tracked files. Skipping update."
+          else
+            echo "Changes detected. Committing and pushing..."
+            git commit -m "chore: auto-sync tracked files from main"
+            git push origin $TARGET_BRANCH
+          fi
