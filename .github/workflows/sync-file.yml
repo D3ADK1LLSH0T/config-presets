@@ -3,7 +3,7 @@ name: Sync Files Across Multiple Branches
 on:
   push:
     branches:
-      - fabric-26.X 
+      - 'fabric-26.X'
     paths:
       - 'README.md'
       - 'LICENSE'
@@ -13,7 +13,7 @@ jobs:
     runs-on: ubuntu-latest
     
     permissions:
-      contents: write # Allows the script to push updates to your branches
+      contents: write
 
     steps:
       - name: Checkout Repository
@@ -24,17 +24,14 @@ jobs:
       - name: Configure Git Bot
         run: |
           git config --global user.name "github-actions[bot]"
-          git config --global user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git config --global user.email "41898282+github-actions[bot]@://github.com"
 
       - name: Sync Files to All Target Branches
         run: |
-          # 2. CONFIGURATION VARIABLES
-          SOURCE_BRANCH="fabric-26.X"          # Put your custom default branch name here
-          TARGET_BRANCHES=("fabric-1.21.11" "neoforge-26.1.2" "neoforge-1.21.11") # List all target branches (space-separated)
+          # CONFIGURATION VARIABLES
+          SOURCE_BRANCH="fabric-26.X"
+          TARGET_BRANCHES=("fabric-1.21.11" "neoforge-26.1.2" "neoforge-1.21.11")  # List all target branches (space-separated)
           FILES_TO_SYNC=("README.md" "LICENSE") # List all target files (space-separated)
-          
-          # Explicitly track and force-map the custom source branch reference
-          git branch -f "$SOURCE_BRANCH" "origin/$SOURCE_BRANCH"
           
           # Loop through each target branch
           for BRANCH in "${TARGET_BRANCHES[@]}"; do
@@ -48,13 +45,13 @@ jobs:
             # Reset any unexpected local changes to keep things clean
             git reset --hard "origin/$BRANCH"
             
-            # Loop through each file and pull it from the dynamic source branch reference
+            # Loop through each file and pull it directly from the remote reference
             for FILE in "${FILES_TO_SYNC[@]}"; do
               if git log -1 "origin/$SOURCE_BRANCH" -- "$FILE" >/dev/null 2>&1; then
-                echo "Pulling latest version of $FILE from $SOURCE_BRANCH branch"
+                echo "Pulling latest version of $FILE from origin/$SOURCE_BRANCH"
                 git checkout "origin/$SOURCE_BRANCH" -- "$FILE"
               else
-                echo "Warning: $FILE does not exist on $SOURCE_BRANCH branch yet. Skipping."
+                echo "Warning: $FILE does not exist on origin/$SOURCE_BRANCH yet. Skipping."
               fi
             done
             
