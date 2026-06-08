@@ -3,7 +3,7 @@ name: Sync Files Across Multiple Branches
 on:
   push:
     branches:
-      - fabric-26.X # Triggers when you edit files on your main branch
+      - fabric-26.X 
     paths:
       - 'README.md'
       - 'LICENSE'
@@ -24,15 +24,17 @@ jobs:
       - name: Configure Git Bot
         run: |
           git config --global user.name "github-actions[bot]"
-          git config --global user.email "41898282+github-actions[bot]@://github.com"
+          git config --global user.email "41898282+github-actions[bot]@users.noreply.github.com"
 
       - name: Sync Files to All Target Branches
         run: |
-          # 1. List all branches you want to update (separated by spaces)
-          TARGET_BRANCHES=("fabric-1.21.11" "neoforge-26.1.2" "neoforge-1.21.11") 
+          # 2. CONFIGURATION VARIABLES
+          SOURCE_BRANCH="fabric-26.X"          # Put your custom default branch name here
+          TARGET_BRANCHES=("fabric-1.21.11" "neoforge-26.1.2" "neoforge-1.21.11") # List all target branches (space-separated)
+          FILES_TO_SYNC=("README.md" "LICENSE") # List all target files (space-separated)
           
-          # 2. List all files you want to sync (separated by spaces)
-          FILES_TO_SYNC=("README.md" "LICENSE")
+          # Explicitly track and force-map the custom source branch reference
+          git branch -f "$SOURCE_BRANCH" "origin/$SOURCE_BRANCH"
           
           # Loop through each target branch
           for BRANCH in "${TARGET_BRANCHES[@]}"; do
@@ -46,13 +48,13 @@ jobs:
             # Reset any unexpected local changes to keep things clean
             git reset --hard "origin/$BRANCH"
             
-            # Loop through each file and pull it from the main branch
+            # Loop through each file and pull it from the dynamic source branch reference
             for FILE in "${FILES_TO_SYNC[@]}"; do
-              if git log -1 -- main -- "$FILE" >/dev/null 2>&1; then
-                echo "Pulling latest version of $FILE from main branch"
-                git checkout main -- "$FILE"
+              if git log -1 "origin/$SOURCE_BRANCH" -- "$FILE" >/dev/null 2>&1; then
+                echo "Pulling latest version of $FILE from $SOURCE_BRANCH branch"
+                git checkout "origin/$SOURCE_BRANCH" -- "$FILE"
               else
-                echo "Warning: $FILE does not exist on main branch yet. Skipping."
+                echo "Warning: $FILE does not exist on $SOURCE_BRANCH branch yet. Skipping."
               fi
             done
             
@@ -61,7 +63,7 @@ jobs:
               echo "No changes detected in $BRANCH. Skipping update."
             else
               echo "Changes detected in $BRANCH. Committing and pushing..."
-              git commit -m "chore: auto-sync tracked files from main"
+              git commit -m "chore: auto-sync tracked files from $SOURCE_BRANCH"
               git push origin "$BRANCH"
             fi
           done
