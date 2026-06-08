@@ -53,7 +53,6 @@ Fabric:
 NeoForge:
 - [NeoForge Loader](https://neoforged.net)
 - [Cloth Config API](https://modrinth.com/mod/cloth-config)
-- [Mod Menu](https://modrinth.com/mod/modmenu) (optional, for easy access to config)
 ## 🔧 Compatibility
 Works great with:
 
@@ -71,7 +70,8 @@ This mod is available under the MIT License.
 If you enjoy this mod, consider:
 
 - ⭐ Starring the [GitHub repository](https://github.com/D3ADK1LLSH0T/config-presets)!
-- ❤️ Leaving a heart on Modrinth!
+- ❤️ Leaving a heart on [Modrinth](https://modrinth.com/mod/config-presets)!
+- 🔨 Favorite and Follow on [Curse Forge](www.curseforge.com/minecraft/mc-mods/config-presets/)!
 - 🐦 Sharing with friends!
 
 ## 📸 Screenshots
