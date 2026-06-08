@@ -11,7 +11,7 @@ Tired of manually tweaking your settings every time you switch between recording
 
 [![Fabric](https://cdn.modrinth.com/data/cached_images/727cededb019aacec517e3d25aabead76c55d4ab_0.webp)](https://modrinth.com/mod/config-presets/versions?l=fabric)  [![NeoForge](https://cdn.modrinth.com/data/cached_images/f1ba2ea9a20ef0911c268879c20271438a8827fb.png)](https://modrinth.com/mod/config-presets/versions?l=neoforge)  [![GitHub](https://cdn.modrinth.com/data/cached_images/9d6a8891b5526c7425613a9a68f091d92ff39ceb_0.webp)](https://github.com/D3ADK1LLSH0T/config-presets)  [![Modrinth](https://cdn.modrinth.com/data/cached_images/ecf3a3e069bdb19e53e342d6497bfd825a993e69.png)](https://modrinth.com/mod/config-presets)  [![Curse Forge](https://cdn.modrinth.com/data/cached_images/59580d3539ab3a36e1c2c6e56cb83b22c35ed740.png)](https://www.curseforge.com/minecraft)
 
-# 🚧 THIS MOD IS HEAVILY UNDER DEVELOPMENT! I PLAN NOT TO HAVE THE GAME RESTART TO APPLY MOD CONFIGURATIONS, BUT THIS WILL NOT BE IMPLEMENTED FOR A WHILE.
+## 🚧 THIS MOD IS HEAVILY UNDER DEVELOPMENT! I PLAN NOT TO HAVE THE GAME RESTART TO APPLY MOD CONFIGURATIONS, BUT THIS WILL NOT BE IMPLEMENTED FOR A WHILE.
 
 ## 📦 What Can You Save?
 - **Video Settings** - Graphics quality, render distance, FOV, particles, and more
