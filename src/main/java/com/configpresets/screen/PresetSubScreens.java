@@ -4,16 +4,16 @@ import com.configpresets.ConfigPresetsMod;
 import com.configpresets.Preset;
 import com.configpresets.PresetManager;
 import com.configpresets.PresetToast;
-import net.fabricmc.loader.api.FabricLoader;
-import net.fabricmc.loader.api.ModContainer;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.GuiGraphicsExtractor;
+import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.Checkbox;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.input.MouseButtonEvent;
 import net.minecraft.network.chat.Component;
+import net.neoforged.fml.ModList;
+import net.neoforged.neoforgespi.language.IModInfo;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
@@ -63,9 +63,9 @@ class ConfirmScreen extends Screen {
     }
 
     @Override
-    public void extractRenderState(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float delta) {
-        super.extractRenderState(graphics, mouseX, mouseY, delta);
-        graphics.centeredText(this.font, message,
+    public void render(GuiGraphics graphics, int mouseX, int mouseY, float delta) {
+        super.render(graphics, mouseX, mouseY, delta);
+        graphics.drawCenteredString(this.font, message,
                 this.width / 2, this.height / 2 - 24, 0xFFFFFFFF);
     }
 
@@ -146,26 +146,26 @@ class ExportScreen extends Screen {
     private String buildModList() {
         StringBuilder sb = new StringBuilder();
         sb.append("# Mod list captured for preset: ").append(preset.name).append('\n');
-        List<ModContainer> mods = new ArrayList<>(FabricLoader.getInstance().getAllMods());
-        mods.sort((a, b) -> a.getMetadata().getId().compareToIgnoreCase(b.getMetadata().getId()));
-        for (ModContainer mc : mods) {
-            sb.append(mc.getMetadata().getId())
+        List<IModInfo> mods = new ArrayList<>(ModList.get().getMods());
+        mods.sort((a, b) -> a.getModId().compareToIgnoreCase(b.getModId()));
+        for (IModInfo mc : mods) {
+            sb.append(mc.getModId())
                     .append(" = ")
-                    .append(mc.getMetadata().getVersion().getFriendlyString())
+                    .append(mc.getVersion().toString())
                     .append('\n');
         }
         return sb.toString();
     }
 
     @Override
-    public void extractRenderState(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float delta) {
-        super.extractRenderState(graphics, mouseX, mouseY, delta);
-        graphics.centeredText(this.font, this.title, this.width / 2, 40, 0xFFFFFFFF);
-        graphics.centeredText(this.font,
+    public void render(GuiGraphics graphics, int mouseX, int mouseY, float delta) {
+        super.render(graphics, mouseX, mouseY, delta);
+        graphics.drawCenteredString(this.font, this.title, this.width / 2, 40, 0xFFFFFFFF);
+        graphics.drawCenteredString(this.font,
                 Component.literal("Preset: " + preset.name).withStyle(ChatFormatting.GRAY),
                 this.width / 2, this.height / 4, 0xFFAAAAAA);
         if (!status.isEmpty()) {
-            graphics.centeredText(this.font,
+            graphics.drawCenteredString(this.font,
                     Component.literal(status).withStyle(ChatFormatting.GREEN),
                     this.width / 2, this.height - 76, 0xFF55FF55);
         }
@@ -265,14 +265,14 @@ class ImportScreen extends Screen {
     }
 
     @Override
-    public void extractRenderState(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float delta) {
-        super.extractRenderState(graphics, mouseX, mouseY, delta);
-        graphics.centeredText(this.font, this.title, this.width / 2, 32, 0xFFFFFFFF);
+    public void render(GuiGraphics graphics, int mouseX, int mouseY, float delta) {
+        super.render(graphics, mouseX, mouseY, delta);
+        graphics.drawCenteredString(this.font, this.title, this.width / 2, 32, 0xFFFFFFFF);
 
         graphics.fill(listX, listY, listX + listW, listY + listH, 0x66000000);
 
         if (files.isEmpty()) {
-            graphics.centeredText(this.font,
+            graphics.drawCenteredString(this.font,
                     Component.literal("No files in config-presets/exports/").withStyle(ChatFormatting.GRAY),
                     listX + listW / 2, listY + listH / 2 - 4, 0xFFAAAAAA);
             return;
@@ -291,7 +291,7 @@ class ImportScreen extends Screen {
                     graphics.fill(listX, rowTop, listX + listW, rowTop + ROW_H,
                             sel ? 0x803A6EA5 : 0x40FFFFFF);
                 }
-                graphics.text(this.font,
+                graphics.drawString(this.font,
                         Component.literal(files.get(i).getFileName().toString()),
                         listX + 6, rowTop + 5, 0xFFFFFFFF, false);
             }
@@ -376,10 +376,10 @@ class RestartPromptScreen extends Screen {
     }
 
     @Override
-    public void extractRenderState(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float delta) {
-        super.extractRenderState(graphics, mouseX, mouseY, delta);
-        graphics.centeredText(this.font, LINE_1, this.width / 2, this.height / 2 - 28, 0xFFFFFFFF);
-        graphics.centeredText(this.font, LINE_2, this.width / 2, this.height / 2 - 14, 0xFFFFFFFF);
+    public void render(GuiGraphics graphics, int mouseX, int mouseY, float delta) {
+        super.render(graphics, mouseX, mouseY, delta);
+        graphics.drawCenteredString(this.font, LINE_1, this.width / 2, this.height / 2 - 28, 0xFFFFFFFF);
+        graphics.drawCenteredString(this.font, LINE_2, this.width / 2, this.height / 2 - 14, 0xFFFFFFFF);
     }
 
     /** Escape returns directly to the PresetScreen, never stacking screens. */

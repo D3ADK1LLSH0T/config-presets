@@ -7,7 +7,7 @@ import com.configpresets.PresetManager;
 import com.configpresets.PresetToast;
 import com.configpresets.config.ModConfig;
 import net.minecraft.ChatFormatting;
-import net.minecraft.client.gui.GuiGraphicsExtractor;
+import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.EditBox;
 import net.minecraft.client.gui.screens.Screen;
@@ -351,10 +351,10 @@ public class PresetScreen extends Screen {
     // ---------------------------------------------------------------------
 
     @Override
-    public void extractRenderState(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float delta) {
-        super.extractRenderState(graphics, mouseX, mouseY, delta);
+    public void render(GuiGraphics graphics, int mouseX, int mouseY, float delta) {
+        super.render(graphics, mouseX, mouseY, delta);
 
-        graphics.text(this.font, this.title, listX, 8, 0xFFFFFFFF, true);
+        graphics.drawString(this.font, this.title, listX, 8, 0xFFFFFFFF, true);
 
         // List panel background.
         graphics.fill(listX, listY, listX + listW, listY + listH, 0x66000000);
@@ -364,7 +364,7 @@ public class PresetScreen extends Screen {
             String msg = all.isEmpty()
                     ? "No presets yet \u2014 click \"Create New\""
                     : "No presets match this filter";
-            graphics.centeredText(this.font, Component.literal(msg).withStyle(ChatFormatting.GRAY),
+            graphics.drawCenteredString(this.font, Component.literal(msg).withStyle(ChatFormatting.GRAY),
                     listX + listW / 2, listY + listH / 2 - 4, 0xFFAAAAAA);
         }
 
@@ -391,7 +391,7 @@ public class PresetScreen extends Screen {
         }
     }
 
-    private void drawRow(GuiGraphicsExtractor graphics, Preset p, int index, int rowTop, int mouseX, int mouseY) {
+    private void drawRow(GuiGraphics graphics, Preset p, int index, int rowTop, int mouseX, int mouseY) {
         boolean isSelected = index == selectedIndex;
         boolean hovered = mouseX >= listX && mouseX <= listX + listW - 6
                 && mouseY >= rowTop && mouseY < rowTop + ROW_H
@@ -407,11 +407,11 @@ public class PresetScreen extends Screen {
         int nameColor = 0xFFFFFFFF;
         String name = p.name == null ? "(unnamed)" : p.name;
         if (p.isDefault) {
-            graphics.text(this.font, Component.literal("\u2605").withStyle(ChatFormatting.GOLD),
+            graphics.drawString(this.font, Component.literal("\u2605").withStyle(ChatFormatting.GOLD),
                     tx, rowTop + 6, 0xFFFFD700, false);
             tx += 10;
         }
-        graphics.text(this.font, trim(name, 150), tx, rowTop + 6, nameColor, false);
+        graphics.drawString(this.font, trim(name, 150), tx, rowTop + 6, nameColor, false);
 
         // Folder badge + tags on the second line.
         int sx = listX + 10;
@@ -432,10 +432,10 @@ public class PresetScreen extends Screen {
     }
 
     /** Draws a small rounded pill and returns the next x position. */
-    private int drawPill(GuiGraphicsExtractor graphics, String label, int x, int y, int bgColor, int textColor) {
+    private int drawPill(GuiGraphics graphics, String label, int x, int y, int bgColor, int textColor) {
         int w = this.font.width(label) + 8;
         graphics.fill(x, y, x + w, y + 11, bgColor);
-        graphics.text(this.font, Component.literal(label), x + 4, y + 2, textColor, false);
+        graphics.drawString(this.font, Component.literal(label), x + 4, y + 2, textColor, false);
         return x + w + 4;
     }
 

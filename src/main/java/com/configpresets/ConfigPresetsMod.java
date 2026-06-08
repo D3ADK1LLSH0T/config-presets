@@ -1,16 +1,28 @@
 package com.configpresets;
 
 import com.configpresets.config.ModConfig;
+import com.configpresets.screen.IconButton;
 import com.configpresets.screen.PresetScreen;
 import com.mojang.blaze3d.platform.InputConstants;
-import net.fabricmc.api.ClientModInitializer;
-import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientLifecycleEvents;
-import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
-import net.fabricmc.fabric.api.client.keymapping.v1.KeyMappingHelper;
-import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.client.KeyMapping;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.components.Tooltip;
+import net.minecraft.client.gui.screens.PauseScreen;
+import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.client.gui.screens.TitleScreen;
+import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
+import net.neoforged.api.distmarker.Dist;
+import net.neoforged.bus.api.IEventBus;
+import net.neoforged.fml.ModContainer;
+import net.neoforged.fml.common.Mod;
+import net.neoforged.fml.loading.FMLPaths;
+import net.neoforged.neoforge.client.event.RegisterKeyMappingsEvent;
+import net.neoforged.neoforge.client.event.ScreenEvent;
+import net.neoforged.neoforge.client.event.ClientTickEvent;
+import net.neoforged.neoforge.client.event.lifecycle.ClientStoppingEvent;
+import net.neoforged.neoforge.client.gui.IConfigScreenFactory;
+import net.neoforged.neoforge.common.NeoForge;
 import org.lwjgl.glfw.GLFW;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -18,18 +30,20 @@ import org.slf4j.LoggerFactory;
 import java.nio.file.Path;
 
 /**
- * Main mod initializer for Config Presets.
+ * Main mod entry point for Config Presets (NeoForge).
  *
  * <p>Sets up the singleton {@link PresetManager} and {@link CaptureHandler}, applies
- * the default preset (if any) on launch, and registers the keybind (default
- * {@code P}) used to open the management screen.</p>
+ * the default preset (if any) on launch, registers the keybind (default {@code P})
+ * used to open the management screen, and injects the custom icon button onto the
+ * title / pause screens via NeoForge's {@link ScreenEvent} (no mixins required).</p>
  */
-public class ConfigPresetsMod implements ClientModInitializer {
+@Mod(value = ConfigPresetsMod.MOD_ID, dist = Dist.CLIENT)
+public class ConfigPresetsMod {
 
     public static final String MOD_ID = "configpresets";
     public static final Logger LOGGER = LoggerFactory.getLogger(MOD_ID);
 
-    /** Keybind category (26.X uses an Identifier-based category). */
+    /** Keybind category (1.21.11 uses an Identifier-based category). */
     private static final KeyMapping.Category KEY_CATEGORY =
             KeyMapping.Category.register(Identifier.fromNamespaceAndPath(MOD_ID, "main"));
 
@@ -42,9 +56,8 @@ public class ConfigPresetsMod implements ClientModInitializer {
     /** Set once the default preset has been applied on launch. */
     private static boolean defaultApplied = false;
 
-    @Override
-    public void onInitializeClient() {
-        Path gameDir = FabricLoader.getInstance().getGameDir();
+    public ConfigPresetsMod(IEventBus modBus, ModContainer container) {
+        Path gameDir = FMLPaths.GAMEDIR.get();
 
         presetManager = new PresetManager(gameDir);
         captureHandler = new CaptureHandler(gameDir);
@@ -54,58 +67,50 @@ public class ConfigPresetsMod implements ClientModInitializer {
         // Ensure config is loaded early.
         ModConfig.get();
 
-        registerKeybinds();
-        registerTickHandler();
-        registerLifecycleHandlers();
+        // Mod-bus listeners (registration phase).
+        modBus.addListener(this::onRegisterKeyMappings);
+
+        // Register the NeoForge settings screen (replaces the Cloth/Mod Menu screen).
+        container.registerExtensionPoint(IConfigScreenFactory.class,
+                (mc, parent) -> ModConfig.createConfigScreen(parent));
+
+        // Game-bus listeners (runtime phase).
+        NeoForge.EVENT_BUS.addListener(this::onClientTick);
+        NeoForge.EVENT_BUS.addListener(this::onScreenInit);
+        NeoForge.EVENT_BUS.addListener(this::onClientStopping);
     }
 
-    /** Registers the auto-save-on-exit hook. */
-    private void registerLifecycleHandlers() {
-        ClientLifecycleEvents.CLIENT_STOPPING.register(client -> autoSaveOnExit());
-    }
+    // ---------------------------------------------------------------------
+    // Keybind registration
+    // ---------------------------------------------------------------------
 
-    /**
-     * On exit, if enabled, updates the configured default / auto-save preset(s)
-     * with the current settings so they persist between sessions.
-     */
-    private void autoSaveOnExit() {
-        try {
-            boolean globalAutoSave = ModConfig.get().autoSaveOnExit;
-            for (Preset p : presetManager.getAll()) {
-                if (globalAutoSave ? p.isDefault : p.autoSaveOnExit) {
-                    LOGGER.info("Auto-saving preset on exit: {}", p.name);
-                    captureHandler.capture(p);
-                    presetManager.save(p);
-                }
-            }
-        } catch (Throwable t) {
-            LOGGER.error("Auto-save on exit failed", t);
-        }
-    }
-
-    private void registerKeybinds() {
-        openScreenKey = KeyMappingHelper.registerKeyMapping(new KeyMapping(
+    private void onRegisterKeyMappings(RegisterKeyMappingsEvent event) {
+        openScreenKey = new KeyMapping(
                 "key.configpresets.open_screen",
                 InputConstants.Type.KEYSYM,
                 GLFW.GLFW_KEY_P,
-                KEY_CATEGORY
-        ));
+                KEY_CATEGORY);
+        event.register(openScreenKey);
     }
 
-    private void registerTickHandler() {
-        ClientTickEvents.END_CLIENT_TICK.register(client -> {
-            // Apply the default preset once, after the client has finished loading.
-            if (!defaultApplied && client != null) {
-                defaultApplied = true;
-                applyDefaultPreset();
-            }
+    // ---------------------------------------------------------------------
+    // Tick handling: default preset on launch + keybind polling
+    // ---------------------------------------------------------------------
 
-            if (openScreenKey != null) {
-                while (openScreenKey.consumeClick()) {
-                    onOpenScreenPressed(client);
-                }
+    private void onClientTick(ClientTickEvent.Post event) {
+        Minecraft client = Minecraft.getInstance();
+
+        // Apply the default preset once, after the client has finished loading.
+        if (!defaultApplied && client != null) {
+            defaultApplied = true;
+            applyDefaultPreset();
+        }
+
+        if (openScreenKey != null) {
+            while (openScreenKey.consumeClick()) {
+                onOpenScreenPressed(client);
             }
-        });
+        }
     }
 
     /** Applies the default preset on launch, if one is configured. */
@@ -133,6 +138,57 @@ public class ConfigPresetsMod implements ClientModInitializer {
             client.setScreen(new PresetScreen(client.screen));
         } catch (Throwable t) {
             LOGGER.error("Failed to open Config Presets screen", t);
+        }
+    }
+
+    // ---------------------------------------------------------------------
+    // Button injection on title / pause screens (NeoForge event, no mixins)
+    // ---------------------------------------------------------------------
+
+    private void onScreenInit(ScreenEvent.Init.Post event) {
+        Screen screen = event.getScreen();
+        if (screen instanceof TitleScreen) {
+            if (ModConfig.get().showButtonOnTitleScreen) {
+                addPresetButton(event, screen, false);
+            }
+        } else if (screen instanceof PauseScreen) {
+            if (ModConfig.get().showButtonOnPauseScreen) {
+                addPresetButton(event, screen, true);
+            }
+        }
+    }
+
+    private void addPresetButton(ScreenEvent.Init.Post event, Screen screen, boolean pauseScreen) {
+        int[] pos = PresetScreen.computeButtonPosition(screen.width, screen.height, pauseScreen);
+        IconButton button = new IconButton(
+                pos[0], pos[1], 20, 20,
+                Component.literal("Config Presets"),
+                b -> {
+                    Minecraft mc = Minecraft.getInstance();
+                    if (mc != null) {
+                        mc.setScreen(new PresetScreen(screen));
+                    }
+                });
+        button.setTooltip(Tooltip.create(Component.literal("Config Presets")));
+        event.addListener(button);
+    }
+
+    // ---------------------------------------------------------------------
+    // Auto-save on exit
+    // ---------------------------------------------------------------------
+
+    private void onClientStopping(ClientStoppingEvent event) {
+        try {
+            boolean globalAutoSave = ModConfig.get().autoSaveOnExit;
+            for (Preset p : presetManager.getAll()) {
+                if (globalAutoSave ? p.isDefault : p.autoSaveOnExit) {
+                    LOGGER.info("Auto-saving preset on exit: {}", p.name);
+                    captureHandler.capture(p);
+                    presetManager.save(p);
+                }
+            }
+        } catch (Throwable t) {
+            LOGGER.error("Auto-save on exit failed", t);
         }
     }
 

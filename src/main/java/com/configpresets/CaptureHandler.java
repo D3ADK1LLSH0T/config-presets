@@ -473,7 +473,7 @@ public class CaptureHandler {
                 // OptionInstance reflects the restored values.
                 client.options.load();
                 // Re-apply GUI scale and other resolution-derived layout values.
-                client.resizeGui();
+                client.resizeDisplay();
                 // Rebuild the world render so render distance / graphics changes show
                 // up immediately when a level is loaded.
                 if (client.level != null && client.levelRenderer != null) {

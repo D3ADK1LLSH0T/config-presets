@@ -5,7 +5,7 @@ import com.configpresets.Preset;
 import com.configpresets.PresetManager;
 import com.configpresets.PresetToast;
 import net.minecraft.ChatFormatting;
-import net.minecraft.client.gui.GuiGraphicsExtractor;
+import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.Checkbox;
 import net.minecraft.client.gui.components.EditBox;
@@ -288,15 +288,15 @@ public class PresetEditScreen extends Screen {
     // ---------------------------------------------------------------------
 
     @Override
-    public void extractRenderState(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float delta) {
-        super.extractRenderState(graphics, mouseX, mouseY, delta);
+    public void render(GuiGraphics graphics, int mouseX, int mouseY, float delta) {
+        super.render(graphics, mouseX, mouseY, delta);
 
-        graphics.text(this.font, this.title, 20, 20, 0xFFFFFFFF, true);
+        graphics.drawString(this.font, this.title, 20, 20, 0xFFFFFFFF, true);
 
         int leftX = 20;
-        graphics.text(this.font, Component.literal("Name").withStyle(ChatFormatting.GRAY), leftX, 34, 0xFFAAAAAA, false);
-        graphics.text(this.font, Component.literal("Description").withStyle(ChatFormatting.GRAY), leftX, 74, 0xFFAAAAAA, false);
-        graphics.text(this.font, Component.literal("Tags").withStyle(ChatFormatting.GRAY), leftX, 190, 0xFFAAAAAA, false);
+        graphics.drawString(this.font, Component.literal("Name").withStyle(ChatFormatting.GRAY), leftX, 34, 0xFFAAAAAA, false);
+        graphics.drawString(this.font, Component.literal("Description").withStyle(ChatFormatting.GRAY), leftX, 74, 0xFFAAAAAA, false);
+        graphics.drawString(this.font, Component.literal("Tags").withStyle(ChatFormatting.GRAY), leftX, 190, 0xFFAAAAAA, false);
 
         // Color palette swatches.
         drawPalette(graphics, leftX + 78, 244, mouseX, mouseY);
@@ -306,12 +306,12 @@ public class PresetEditScreen extends Screen {
 
         // Right column header.
         int rx = this.width / 2 + 14;
-        graphics.text(this.font, Component.literal("Include in preset:").withStyle(ChatFormatting.GRAY),
+        graphics.drawString(this.font, Component.literal("Include in preset:").withStyle(ChatFormatting.GRAY),
                 rx, 32, 0xFFAAAAAA, false);
 
         // Mod config sub-list (only meaningful when "Mod configs" is on).
         boolean modsActive = cbModConfigs != null && cbModConfigs.selected();
-        graphics.text(this.font,
+        graphics.drawString(this.font,
                 Component.literal("Per-mod configs" + (modsActive ? "" : " (enable above)"))
                         .withStyle(modsActive ? ChatFormatting.WHITE : ChatFormatting.DARK_GRAY),
                 modListX, modListY - 11, modsActive ? 0xFFFFFFFF : 0xFF666666, false);
@@ -320,7 +320,7 @@ public class PresetEditScreen extends Screen {
 
         if (modsActive) {
             if (modIds.isEmpty()) {
-                graphics.centeredText(this.font,
+                graphics.drawCenteredString(this.font,
                         Component.literal("No mod configs found").withStyle(ChatFormatting.DARK_GRAY),
                         modListX + modListW / 2, modListY + modListH / 2 - 4, 0xFF666666);
             } else {
@@ -331,7 +331,7 @@ public class PresetEditScreen extends Screen {
                     if (rowTop + MOD_ROW_H >= modListY && rowTop <= modListY + modListH) {
                         String id = modIds.get(i);
                         boolean on = modToggles.getOrDefault(id, true);
-                        graphics.text(this.font,
+                        graphics.drawString(this.font,
                                 Component.literal((on ? "\u2611 " : "\u2610 ") + id)
                                         .withStyle(on ? ChatFormatting.WHITE : ChatFormatting.GRAY),
                                 modListX + 4, rowTop + 3, on ? 0xFFFFFFFF : 0xFF999999, false);
@@ -342,7 +342,7 @@ public class PresetEditScreen extends Screen {
         }
     }
 
-    private void drawPalette(GuiGraphicsExtractor graphics, int x, int y, int mouseX, int mouseY) {
+    private void drawPalette(GuiGraphics graphics, int x, int y, int mouseX, int mouseY) {
         int sw = 14;
         for (int i = 0; i < PALETTE.length; i++) {
             int col = i % 8;
@@ -361,7 +361,7 @@ public class PresetEditScreen extends Screen {
         }
     }
 
-    private void drawTagPills(GuiGraphicsExtractor graphics, int x, int y) {
+    private void drawTagPills(GuiGraphics graphics, int x, int y) {
         tagRemoveBoxes.clear();
         int px = x;
         int py = y;
@@ -375,7 +375,7 @@ public class PresetEditScreen extends Screen {
             }
             int color = PresetScreen.parseHex(t.hexColor);
             graphics.fill(px, py, px + w, py + 11, 0xCC000000 | (color & 0xFFFFFF));
-            graphics.text(this.font, Component.literal(label),
+            graphics.drawString(this.font, Component.literal(label),
                     px + 4, py + 2, PresetScreen.contrastText(color), false);
             tagRemoveBoxes.add(new int[]{px, py, px + w, py + 11, i});
             px += w + 4;

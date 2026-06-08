@@ -1,6 +1,6 @@
 package com.configpresets.screen;
 
-import net.minecraft.client.gui.GuiGraphicsExtractor;
+import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.network.chat.Component;
@@ -24,9 +24,9 @@ public class IconButton extends Button {
     }
 
     @Override
-    protected void extractContents(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float delta) {
+    protected void renderContents(GuiGraphics graphics, int mouseX, int mouseY, float delta) {
         // Draw the standard button background/sprite first, then the wrench icon on top.
-        this.extractDefaultSprite(graphics);
+        this.renderDefaultSprite(graphics);
         int ix = this.getX() + (this.width - ICON_SIZE) / 2;
         int iy = this.getY() + (this.height - ICON_SIZE) / 2;
         graphics.blit(RenderPipelines.GUI_TEXTURED, ICON, ix, iy, 0.0F, 0.0F,

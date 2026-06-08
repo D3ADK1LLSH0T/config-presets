@@ -4,7 +4,7 @@ import com.configpresets.config.ModConfig;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
-import net.minecraft.client.gui.GuiGraphicsExtractor;
+import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.toasts.Toast;
 import net.minecraft.client.gui.components.toasts.ToastManager;
 import net.minecraft.network.chat.Component;
@@ -12,7 +12,7 @@ import net.minecraft.network.chat.Component;
 /**
  * Lightweight toast shown when a preset is applied. Drawn in the style of an
  * advancement toast: a dark rounded panel with a title line and a description
- * line. Implemented directly against the 26.x {@link Toast} interface
+ * line. Implemented directly against the 1.21.11 {@link Toast} interface
  * (which drives visibility via {@link #update} rather than the draw return).
  */
 public class PresetToast implements Toast {
@@ -90,7 +90,7 @@ public class PresetToast implements Toast {
     }
 
     @Override
-    public void extractRenderState(GuiGraphicsExtractor graphics, Font font, long startTime) {
+    public void render(GuiGraphics graphics, Font font, long startTime) {
         int w = width();
         int h = height();
 
@@ -106,8 +106,8 @@ public class PresetToast implements Toast {
         graphics.fill(5, 9, 15, 23, 0xFF2E8B2E);
 
         int textX = 22;
-        graphics.text(font, title, textX, 7, 0xFFFFFFFF, false);
-        graphics.text(font, description, textX, 18, 0xFFCCCCCC, false);
+        graphics.drawString(font, title, textX, 7, 0xFFFFFFFF, false);
+        graphics.drawString(font, description, textX, 18, 0xFFCCCCCC, false);
     }
 
     @Override
