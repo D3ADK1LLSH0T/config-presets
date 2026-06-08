@@ -4,8 +4,6 @@ import com.configpresets.ConfigPresetsMod;
 import com.configpresets.Preset;
 import com.configpresets.PresetManager;
 import com.configpresets.PresetToast;
-import net.fabricmc.loader.api.FabricLoader;
-import net.fabricmc.loader.api.ModContainer;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
@@ -14,6 +12,8 @@ import net.minecraft.client.gui.components.Checkbox;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.input.MouseButtonEvent;
 import net.minecraft.network.chat.Component;
+import net.neoforged.fml.ModList;
+import net.neoforged.neoforgespi.language.IModInfo;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
@@ -146,12 +146,12 @@ class ExportScreen extends Screen {
     private String buildModList() {
         StringBuilder sb = new StringBuilder();
         sb.append("# Mod list captured for preset: ").append(preset.name).append('\n');
-        List<ModContainer> mods = new ArrayList<>(FabricLoader.getInstance().getAllMods());
-        mods.sort((a, b) -> a.getMetadata().getId().compareToIgnoreCase(b.getMetadata().getId()));
-        for (ModContainer mc : mods) {
-            sb.append(mc.getMetadata().getId())
+        List<IModInfo> mods = new ArrayList<>(ModList.get().getMods());
+        mods.sort((a, b) -> a.getModId().compareToIgnoreCase(b.getModId()));
+        for (IModInfo mc : mods) {
+            sb.append(mc.getModId())
                     .append(" = ")
-                    .append(mc.getMetadata().getVersion().getFriendlyString())
+                    .append(mc.getVersion().toString())
                     .append('\n');
         }
         return sb.toString();

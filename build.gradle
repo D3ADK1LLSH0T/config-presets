@@ -1,5 +1,6 @@
 plugins {
-    id 'net.fabricmc.fabric-loom' version '1.16.3'
+    id 'java'
+    id 'net.neoforged.moddev' version '2.0.141'
     id 'maven-publish'
 }
 
@@ -7,9 +8,9 @@ version = project.mod_version
 group = project.maven_group
 
 base {
-    // Custom jar name: config-presets-fabric-<build_type>v<mod_version>+<mc_short>
-    // e.g. config-presets-fabric-Av0.1+26.1
-    archivesName = "config-presets-fabric-${project.build_type}v${project.mod_version}+${project.mc_short}"
+    // Custom jar name: config-presets-neoforge-<build_type>v<mod_version>+<mc_short>
+    // e.g. config-presets-neoforge-Av0.1+26.1
+    archivesName = "config-presets-neoforge-${project.build_type}v${project.mod_version}+${project.mc_short}"
 }
 
 // mod_version is already encoded in archivesName, so don't append it again as the
@@ -18,91 +19,71 @@ tasks.withType(AbstractArchiveTask).configureEach {
     archiveVersion = ''
 }
 
-loom {
-    // Minecraft 26.X ships de-obfuscated (against Mojang's official names), so the
-    // non-remapping `net.fabricmc.fabric-loom` plugin is used and there is no
-    // `mappings` dependency at all (see the dependencies block). No Yarn-specific
-    // workarounds are required anymore.
+java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(25)
+    }
+    withSourcesJar()
 }
 
 repositories {
-    // Cloth Config + Mod Menu
-    maven {
-        name = 'Shedaniel'
-        url = 'https://maven.shedaniel.me/'
-    }
-    maven {
-        name = 'Terraformers'
-        url = 'https://maven.terraformersmc.com/releases/'
-    }
     mavenCentral()
 }
 
-dependencies {
-    // To change the versions see the gradle.properties file
-    minecraft "com.mojang:minecraft:${project.minecraft_version}"
+neoForge {
+    version = project.neoforge_version
 
-    // Minecraft 26.X is distributed de-obfuscated (already on Mojang's official
-    // names), so NO `mappings` dependency is declared. Declaring one (e.g.
-    // loom.officialMojangMappings()) fails with "Cannot use Mojang mappings in a
-    // non-obfuscated environment" under the non-remapping plugin.
-
-    // With official Mojang mappings the dependencies are no longer remapped from
-    // intermediary, so the plain Gradle configurations are used instead of the
-    // mod-prefixed ones (modImplementation / modApi / modRuntimeOnly).
-    implementation "net.fabricmc:fabric-loader:${project.loader_version}"
-
-    // Fabric API
-    implementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_version}"
-
-    // Cloth Config - GUI config library
-    api("me.shedaniel.cloth:cloth-config-fabric:${project.cloth_config_version}") {
-        exclude(group: "net.fabricmc.fabric-api")
+    // Mixin support: register the mod's mixin config so it is applied at runtime.
+    mods {
+        configpresets {
+            sourceSet sourceSets.main
+        }
     }
 
-    // Mod Menu - integration entry point (optional)
-    implementation "com.terraformersmc:modmenu:${project.modmenu_version}"
+    // Development run configurations.
+    runs {
+        client {
+            client()
+        }
+    }
 }
 
-processResources {
-    inputs.property "version", project.version
+dependencies {
+    // NeoForge itself is supplied by the neoForge { version = ... } block above.
+    // Gson is bundled with Minecraft, so no extra dependency is needed.
+}
 
-    filesMatching("fabric.mod.json") {
-        expand "version": project.version
+tasks.named('processResources', ProcessResources).configure {
+    var replaceProperties = [
+            mod_version       : project.mod_version,
+            minecraft_version : project.minecraft_version,
+            neoforge_version  : project.neoforge_version
+    ]
+    inputs.properties(replaceProperties)
+
+    filesMatching(['META-INF/neoforge.mods.toml']) {
+        expand replaceProperties
     }
 }
 
 tasks.withType(JavaCompile).configureEach {
     it.options.release = 25
-}
-
-java {
-    // Minecraft 26.X targets Java 25. The toolchain lets Gradle locate and use a
-    // JDK 25 for compilation regardless of the JDK that runs Gradle itself.
-    toolchain {
-        languageVersion = JavaLanguageVersion.of(25)
-    }
-
-    withSourcesJar()
-
-    sourceCompatibility = JavaVersion.VERSION_25
-    targetCompatibility = JavaVersion.VERSION_25
+    it.options.encoding = 'UTF-8'
 }
 
 jar {
-    from("LICENSE") {
+    from('LICENSE') {
         rename { "${it}_${project.archives_base_name}" }
     }
 }
 
 publishing {
     publications {
-        create("mavenJava", MavenPublication) {
+        create('mavenJava', MavenPublication) {
             artifactId = project.archives_base_name
             from components.java
         }
     }
-
     repositories {
         // Add repositories to publish to here.
     }
