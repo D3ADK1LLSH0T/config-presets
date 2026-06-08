@@ -1,0 +1,96 @@
+plugins {
+    id 'fabric-loom' version '1.13.3'
+    id 'maven-publish'
+}
+
+version = project.mod_version
+group = project.maven_group
+
+base {
+    // Custom jar name: config-presets-fabric-<build_type>v<mod_version>+<mc_short>
+    // e.g. config-presets-fabric-Av0.1+1.21.11
+    archivesName = "config-presets-fabric-${project.build_type}v${project.mod_version}+${project.mc_short}"
+}
+
+// mod_version is already encoded in archivesName, so don't append it again as the
+// archive version suffix (avoids a trailing "-0.1" in the jar file name).
+tasks.withType(AbstractArchiveTask).configureEach {
+    archiveVersion = ''
+}
+
+loom {
+    // Workaround: Loom 1.11.x + mapping-io 0.7.x reads Fabric API's bundled
+    // enigma javadoc mappings with a "source"/"target" namespace instead of
+    // "intermediary", which trips an over-strict validation during Minecraft
+    // setup. We don't need IDE javadoc from dependency mods, so disable it.
+    enableModProvidedJavadoc = false
+}
+
+repositories {
+    // Cloth Config + Mod Menu
+    maven {
+        name = 'Shedaniel'
+        url = 'https://maven.shedaniel.me/'
+    }
+    maven {
+        name = 'Terraformers'
+        url = 'https://maven.terraformersmc.com/releases/'
+    }
+    mavenCentral()
+}
+
+dependencies {
+    // To change the versions see the gradle.properties file
+    minecraft "com.mojang:minecraft:${project.minecraft_version}"
+    mappings "net.fabricmc:yarn:${project.yarn_mappings}:v2"
+    modImplementation "net.fabricmc:fabric-loader:${project.loader_version}"
+
+    // Fabric API
+    modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_version}"
+
+    // Cloth Config - GUI config library
+    modApi("me.shedaniel.cloth:cloth-config-fabric:${project.cloth_config_version}") {
+        exclude(group: "net.fabricmc.fabric-api")
+    }
+
+    // Mod Menu - integration entry point (optional)
+    modImplementation "com.terraformersmc:modmenu:${project.modmenu_version}"
+}
+
+processResources {
+    inputs.property "version", project.version
+
+    filesMatching("fabric.mod.json") {
+        expand "version": project.version
+    }
+}
+
+tasks.withType(JavaCompile).configureEach {
+    it.options.release = 21
+}
+
+java {
+    withSourcesJar()
+
+    sourceCompatibility = JavaVersion.VERSION_21
+    targetCompatibility = JavaVersion.VERSION_21
+}
+
+jar {
+    from("LICENSE") {
+        rename { "${it}_${project.archives_base_name}" }
+    }
+}
+
+publishing {
+    publications {
+        create("mavenJava", MavenPublication) {
+            artifactId = project.archives_base_name
+            from components.java
+        }
+    }
+
+    repositories {
+        // Add repositories to publish to here.
+    }
+}
