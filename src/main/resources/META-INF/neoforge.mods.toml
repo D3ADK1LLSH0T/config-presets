@@ -23,6 +23,6 @@ Config Presets lets you save your Minecraft options, mod settings, and resource 
 [[dependencies.configpresets]]
     modId="minecraft"
     type="required"
-    versionRange="[${minecraft_version},)"
+    versionRange="26.1.2"
     ordering="NONE"
-    side="CLIENT"
+    side="BOTH"

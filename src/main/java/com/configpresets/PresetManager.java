@@ -66,6 +66,9 @@ public class PresetManager {
         }
     }
 
+    /** The canonical name for the built-in default preset. */
+    public static final String DEFAULT_PRESET_NAME = "Default";
+
     public PresetManager(Path gameDir) {
         this.presetsDir = gameDir.resolve("config-presets");
         ensureDirectory();
@@ -74,6 +77,26 @@ public class PresetManager {
     /** Convenience constructor resolving against the current working directory. */
     public PresetManager() {
         this(Paths.get("."));
+    }
+
+    /**
+     * Ensures a "Default" preset exists on disk. If none is found, one is created
+     * with all capture toggles enabled, marked as the launch default, and saved.
+     * Should be called once during mod initialization after the manager is created.
+     */
+    public synchronized void ensureDefaultPreset() {
+        Preset def = load(DEFAULT_PRESET_NAME);
+        if (def == null) {
+            def = new Preset(DEFAULT_PRESET_NAME);
+            def.description = "The default configuration preset. All settings are always saved.";
+            def.enforceDefaultConstraints();
+            save(def);
+            LOGGER.info("Created built-in Default preset");
+        } else {
+            // Always re-enforce constraints in case the file was hand-edited.
+            def.enforceDefaultConstraints();
+            save(def);
+        }
     }
 
     private void ensureDirectory() {
@@ -175,8 +198,16 @@ public class PresetManager {
         }
     }
 
-    /** Deletes a preset by name. Returns true if a file was removed. */
+    /**
+     * Deletes a preset by name. The built-in default preset cannot be deleted.
+     *
+     * @return true if a file was removed
+     */
     public synchronized boolean delete(String name) {
+        if (isDefaultPreset(name)) {
+            LOGGER.warn("Refusing to delete the Default preset");
+            return false;
+        }
         Path target = fileFor(name);
         try {
             boolean removed = Files.deleteIfExists(target);
@@ -189,6 +220,26 @@ public class PresetManager {
             LOGGER.error("Failed to delete preset '{}'", name, e);
             return false;
         }
+    }
+
+    /**
+     * Returns true if the given name resolves to the built-in default preset
+     * (comparison is based on the sanitized file name so renames are tracked).
+     */
+    public boolean isDefaultPreset(String name) {
+        if (name == null) return false;
+        Preset def = getDefault();
+        if (def != null) {
+            return sanitize(def.name).equals(sanitize(name));
+        }
+        return sanitize(name).equals(sanitize(DEFAULT_PRESET_NAME));
+    }
+
+    /**
+     * Returns true if the given preset object is the built-in default preset.
+     */
+    public boolean isDefaultPreset(Preset preset) {
+        return preset != null && preset.isDefault;
     }
 
     /**
@@ -229,7 +280,8 @@ public class PresetManager {
         }
         // Round-trip through JSON for a deep copy.
         Preset copy = Preset.fromJson(source.toJson());
-        copy.isDefault = false; // duplicates are never default
+        copy.isDefault = false;      // duplicates are never default
+        copy.autoSaveOnExit = false;  // duplicates don't inherit auto-save
         String base = (source.name == null ? "preset" : source.name) + " (copy)";
         String candidate = base;
         int i = 2;
