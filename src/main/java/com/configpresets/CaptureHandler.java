@@ -345,41 +345,78 @@ public class CaptureHandler {
      * those warrant the restart prompt.</p>
      */
     public RestoreResult restore(Preset preset) {
+        return restore(preset, null);
+    }
+
+    /**
+     * Restores a preset with optional fallback to the default preset for any
+     * category the user has disabled. When a non-default preset has a save toggle
+     * unchecked, the corresponding section from {@code fallback} (the Default
+     * preset) is used instead, so no settings are ever left un-applied.
+     *
+     * @param preset   the preset to apply
+     * @param fallback the Default preset used for unchecked categories, may be null
+     */
+    public RestoreResult restore(Preset preset, Preset fallback) {
         RestoreResult result = new RestoreResult();
         Map<String, String> options = readOptions();
         int modConfigsChanged = 0;
 
+        // For each category, use the preset's section if enabled, otherwise
+        // fall back to the default preset's section.
         if (preset.saveVideo) {
             applySection(options, preset.getSection(SECTION_VIDEO));
-            // Restore video/graphics mod configs captured with the video options.
-            // These apply immediately and do NOT count toward the restart prompt.
             result.videoModConfigsChanged += restoreModConfigs(preset.getSection(SECTION_VIDEO_MOD_CONFIGS));
+        } else if (fallback != null && fallback.saveVideo) {
+            applySection(options, fallback.getSection(SECTION_VIDEO));
+            result.videoModConfigsChanged += restoreModConfigs(fallback.getSection(SECTION_VIDEO_MOD_CONFIGS));
         }
+
         if (preset.saveSound) {
             applySection(options, preset.getSection(SECTION_SOUND));
+        } else if (fallback != null && fallback.saveSound) {
+            applySection(options, fallback.getSection(SECTION_SOUND));
         }
+
         if (preset.saveControls) {
             applySection(options, preset.getSection(SECTION_CONTROLS));
+        } else if (fallback != null && fallback.saveControls) {
+            applySection(options, fallback.getSection(SECTION_CONTROLS));
         }
+
         if (preset.saveLanguage) {
             applySection(options, preset.getSection(SECTION_LANGUAGE));
+        } else if (fallback != null && fallback.saveLanguage) {
+            applySection(options, fallback.getSection(SECTION_LANGUAGE));
         }
+
         if (preset.saveAccessibility) {
             applySection(options, preset.getSection(SECTION_ACCESSIBILITY));
+        } else if (fallback != null && fallback.saveAccessibility) {
+            applySection(options, fallback.getSection(SECTION_ACCESSIBILITY));
         }
+
         if (preset.saveChat) {
             applySection(options, preset.getSection(SECTION_CHAT));
+        } else if (fallback != null && fallback.saveChat) {
+            applySection(options, fallback.getSection(SECTION_CHAT));
         }
+
+        // Skin is always captured alongside the preset.
         applySection(options, preset.getSection(SECTION_SKIN));
 
         if (preset.saveResourcePacks) {
             result.resourcePacksChanged = restoreResourcePacks(options, preset.getSection(SECTION_RESOURCE_PACKS));
+        } else if (fallback != null && fallback.saveResourcePacks) {
+            result.resourcePacksChanged = restoreResourcePacks(options, fallback.getSection(SECTION_RESOURCE_PACKS));
         }
 
         writeOptions(options);
 
         if (preset.saveModConfigs) {
             modConfigsChanged += restoreModConfigs(preset.getSection(SECTION_MOD_CONFIGS));
+        } else if (fallback != null && fallback.saveModConfigs) {
+            modConfigsChanged += restoreModConfigs(fallback.getSection(SECTION_MOD_CONFIGS));
         }
         result.modConfigsChanged = modConfigsChanged;
 

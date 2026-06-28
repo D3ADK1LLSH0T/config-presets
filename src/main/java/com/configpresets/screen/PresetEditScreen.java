@@ -174,7 +174,7 @@ public class PresetEditScreen extends Screen {
             ConfigPresetsMod.LOGGER.warn("Could not list mod configs", t);
         }
         modListX = rx;
-        modListY = ry += step + 4;
+        modListY = ry += step + 16;
         modListW = Math.min(240, this.width - rx - 16);
         modListH = Math.max(40, this.height - modListY - 96);
 
@@ -182,6 +182,21 @@ public class PresetEditScreen extends Screen {
         int fy = this.height - 80;
         cbDefault = addToggle(rx, fy, "Apply on launch (default)", preset.isDefault);
         cbAutoSave = addToggle(rx, fy + 20, "Auto-save this preset on exit", preset.autoSaveOnExit);
+
+        // If this is the default preset, lock all category checkboxes ON and
+        // disable the default/auto-save toggles (they are always forced on).
+        if (pm.isDefaultPreset(preset)) {
+            cbVideo.active = false;
+            cbSound.active = false;
+            cbControls.active = false;
+            cbLanguage.active = false;
+            cbAccessibility.active = false;
+            cbChat.active = false;
+            cbResourcePacks.active = false;
+            cbModConfigs.active = false;
+            cbDefault.active = false;
+            cbAutoSave.active = false;
+        }
 
         // ---- Bottom buttons ----
         int cx = this.width / 2;
@@ -253,6 +268,12 @@ public class PresetEditScreen extends Screen {
         preset.perModConfigToggles = new LinkedHashMap<>(modToggles);
         preset.autoSaveOnExit = cbAutoSave.selected();
 
+        // If this is the default preset, re-enforce all constraints regardless
+        // of widget state (the checkboxes are locked, but be defensive).
+        if (pm.isDefaultPreset(preset)) {
+            preset.enforceDefaultConstraints();
+        }
+
         // Capture the current settings into the preset.
         try {
             ConfigPresetsMod.getCaptureHandler().capture(preset);
@@ -269,7 +290,8 @@ public class PresetEditScreen extends Screen {
         // Default flag is exclusive and managed by the manager.
         if (cbDefault.selected()) {
             pm.setDefault(preset);
-        } else if (preset.isDefault) {
+        } else if (preset.isDefault && !pm.isDefaultPreset(preset)) {
+            // Only clear the flag if this is NOT the built-in default preset.
             pm.clearDefault();
             preset.isDefault = false;
         }
@@ -306,8 +328,16 @@ public class PresetEditScreen extends Screen {
 
         // Right column header.
         int rx = this.width / 2 + 14;
-        graphics.drawString(this.font, Component.literal("Include in preset:").withStyle(ChatFormatting.GRAY),
-                rx, 32, 0xFFAAAAAA, false);
+        if (pm.isDefaultPreset(preset)) {
+            graphics.drawString(this.font,
+                    Component.literal("Include in preset: (all locked \u2014 Default)")
+                            .withStyle(ChatFormatting.GOLD),
+                    rx, 32, 0xFFFFD700, false);
+        } else {
+            graphics.drawString(this.font,
+                    Component.literal("Include in preset:").withStyle(ChatFormatting.GRAY),
+                    rx, 32, 0xFFAAAAAA, false);
+        }
 
         // Mod config sub-list (only meaningful when "Mod configs" is on).
         boolean modsActive = cbModConfigs != null && cbModConfigs.selected();

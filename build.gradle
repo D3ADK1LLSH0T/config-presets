@@ -8,9 +8,9 @@ version = project.mod_version
 group = project.maven_group
 
 base {
-    // Custom jar name: config-presets-neoforge-<build_type>v<mod_version>+<mc_short>
-    // e.g. config-presets-neoforge-Av0.1+1.21.11
-    archivesName = "config-presets-neoforge-${project.build_type}v${project.mod_version}+${project.mc_short}"
+    // Custom jar name: config-presets-neoforge-v<mod_version>+<mc_short>
+    // e.g. config-presets-neoforge-v0.0.1+1.21.11
+    archivesName = "config-presets-neoforge-v${project.mod_version}+${project.mc_short}"
 }
 
 // mod_version is already encoded in archivesName, so don't append it again as the
