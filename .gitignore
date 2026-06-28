@@ -1,0 +1,115 @@
+# --------------------------------------------------------------------------
+# Gradle
+# --------------------------------------------------------------------------
+build/
+.gradle/
+gradle-app.setting
+.gradletasknamecache
+out/
+# Keep the Gradle wrapper tracked
+!gradle-wrapper.jar
+!gradle-wrapper.properties
+!gradlew
+!gradlew.bat
+
+# --------------------------------------------------------------------------
+# IntelliJ IDEA
+# --------------------------------------------------------------------------
+.idea/
+*.iml
+*.ipr
+*.iws
+.idea_modules/
+
+# --------------------------------------------------------------------------
+# Eclipse
+# --------------------------------------------------------------------------
+.settings/
+.classpath
+.project
+.metadata/
+bin/
+.apt_generated/
+.factorypath
+.recommenders/
+
+# --------------------------------------------------------------------------
+# Visual Studio Code
+# --------------------------------------------------------------------------
+.vscode/
+*.code-workspace
+
+# --------------------------------------------------------------------------
+# NetBeans
+# --------------------------------------------------------------------------
+nbproject/
+nbbuild/
+nbdist/
+.nb-gradle/
+
+# --------------------------------------------------------------------------
+# Operating System files
+# --------------------------------------------------------------------------
+# macOS
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+.AppleDouble
+.LSOverride
+# Windows
+Thumbs.db
+Thumbs.db:encryptable
+ehthumbs.db
+ehthumbs_vista.db
+desktop.ini
+$RECYCLE.BIN/
+# Linux
+*~
+.directory
+.Trash-*
+
+# --------------------------------------------------------------------------
+# Minecraft runtime (both loaders)
+# --------------------------------------------------------------------------
+run/
+runs/
+logs/
+crash-reports/
+
+# Fabric Loom generated sources / caches
+remappedSrc/
+.fabric/
+.loom-cache/
+
+# NeoForge ModDev generated sources / caches
+.neoforge/
+.mixin.out/
+.cache/
+
+# --------------------------------------------------------------------------
+# Compiled output & archives
+# --------------------------------------------------------------------------
+*.class
+# Ignore jars everywhere, but keep dependency jars committed under libs/
+*.jar
+!libs/**/*.jar
+!gradle/wrapper/gradle-wrapper.jar
+# Logs
+*.log
+*.log.gz
+
+# --------------------------------------------------------------------------
+# Java / JVM crash & temp files
+# --------------------------------------------------------------------------
+hs_err_pid*
+replay_pid*
+*.hprof
+
+# --------------------------------------------------------------------------
+# Misc / project-specific
+# --------------------------------------------------------------------------
+*.bak
+*.tmp
+*.orig
