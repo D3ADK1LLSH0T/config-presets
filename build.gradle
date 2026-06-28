@@ -7,9 +7,9 @@ version = project.mod_version
 group = project.maven_group
 
 base {
-    // Custom jar name: config-presets-fabric-<build_type>v<mod_version>+<mc_short>
-    // e.g. config-presets-fabric-Av0.1+26.1
-    archivesName = "config-presets-fabric-${project.build_type}v${project.mod_version}+${project.mc_short}"
+    // Custom jar name: config-presets-fabric-v<mod_version>+<mc_short>
+    // e.g. config-presets-fabric-v0.0.1+26.1
+    archivesName = "config-presets-fabric-v${project.mod_version}+${project.mc_short}"
 }
 
 // mod_version is already encoded in archivesName, so don't append it again as the

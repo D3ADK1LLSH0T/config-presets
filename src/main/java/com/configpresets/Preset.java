@@ -78,6 +78,24 @@ public class Preset {
     /** Whether the current settings are written into this preset on game exit. */
     public boolean autoSaveOnExit = false;
 
+    /**
+     * Enforces the constraints that apply to the permanent default preset:
+     * all category toggles are forced on and auto-save is always enabled.
+     * Called by the manager whenever the default preset is loaded or saved.
+     */
+    public void enforceDefaultConstraints() {
+        this.saveVideo = true;
+        this.saveSound = true;
+        this.saveControls = true;
+        this.saveLanguage = true;
+        this.saveAccessibility = true;
+        this.saveChat = true;
+        this.saveResourcePacks = true;
+        this.saveModConfigs = true;
+        this.autoSaveOnExit = true;
+        this.isDefault = true;
+    }
+
     // ---------------------------------------------------------------------
     // Timestamps (epoch milliseconds)
     // ---------------------------------------------------------------------
