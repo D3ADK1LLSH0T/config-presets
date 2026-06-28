@@ -101,10 +101,9 @@ public class PresetScreen extends Screen {
             case BOTTOM_LEFT -> new int[]{margin, height - size - margin};
             case BOTTOM_RIGHT -> new int[]{width - size - margin, height - size - margin};
             case NEXT_TO_BUTTONS -> pauseScreen
-                    // To the right of the "Mods" row (one button row below the
-                    // Advancements/Statistics row), matching the right edge of the
-                    // full-width buttons.
-                    ? new int[]{width / 2 + 104, height / 4 + 56}
+                    // Next to the camera / screenshot button, to the right of
+                    // the Advancements / Statistics row.
+                    ? new int[]{width / 2 + 128, height / 4 + 32}
                     // To the right of the title-screen button column.
                     : new int[]{width / 2 + 104, height / 4 + 48};
         };
@@ -160,7 +159,7 @@ public class PresetScreen extends Screen {
                 openEditor(sel, false);
             }
         }, hasSelection()) + gap;
-        bx = addAction(bx, by, 60, "Delete", b -> deleteSelected(), hasSelection()) + gap;
+        bx = addAction(bx, by, 60, "Delete", b -> deleteSelected(), hasSelection() && !pm.isDefaultPreset(selected())) + gap;
         bx = addAction(bx, by, 74, "Duplicate", b -> duplicateSelected(), hasSelection()) + gap;
         bx = addAction(bx, by, 60, "Export", b -> {
             Preset sel = selected();
@@ -292,7 +291,18 @@ public class PresetScreen extends Screen {
                 ConfigPresetsMod.getCaptureHandler().capture(backup);
                 pm.save(backup);
             }
-            CaptureHandler.RestoreResult result = ConfigPresetsMod.getCaptureHandler().restore(sel);
+
+            // If applying the default preset, auto-save current settings first.
+            if (pm.isDefaultPreset(sel)) {
+                ConfigPresetsMod.getCaptureHandler().capture(sel);
+                pm.save(sel);
+            }
+
+            // For non-default presets, use the Default preset as a fallback for
+            // any unchecked categories so no settings are ever left un-applied.
+            Preset fallback = pm.isDefaultPreset(sel) ? null : pm.getDefault();
+            CaptureHandler.RestoreResult result = ConfigPresetsMod.getCaptureHandler().restore(sel, fallback);
+
             if (result.resourcePacksChanged) {
                 CaptureHandler.triggerResourceReload();
             }
@@ -312,7 +322,7 @@ public class PresetScreen extends Screen {
 
     private void deleteSelected() {
         Preset sel = selected();
-        if (sel == null || this.client == null) {
+        if (sel == null || this.client == null || pm.isDefaultPreset(sel)) {
             return;
         }
         this.client.setScreen(new ConfirmScreen(this,
@@ -353,10 +363,11 @@ public class PresetScreen extends Screen {
 
     @Override
     public void render(DrawContext context, int mouseX, int mouseY, float delta) {
-        this.renderBackground(context, mouseX, mouseY, delta);
+        // NOTE (1.21.11): do NOT call this.renderBackground(...) here.
+        // Screen#render already renders the blurred background, and the
+        // 1.21.11 render backend throws "Can only blur once per frame" if
+        // the blur is applied twice. super.render(...) handles it.
         super.render(context, mouseX, mouseY, delta);
-
-        context.drawTextWithShadow(this.textRenderer, this.title, listX, 8, 0xFFFFFFFF);
 
         // List panel background.
         context.fill(listX, listY, listX + listW, listY + listH, 0x66000000);

@@ -175,7 +175,7 @@ public class PresetEditScreen extends Screen {
             ConfigPresetsMod.LOGGER.warn("Could not list mod configs", t);
         }
         modListX = rx;
-        modListY = ry += step + 4;
+        modListY = ry += step + 16;
         modListW = Math.min(240, this.width - rx - 16);
         modListH = Math.max(40, this.height - modListY - 96);
 
@@ -183,6 +183,21 @@ public class PresetEditScreen extends Screen {
         int fy = this.height - 80;
         cbDefault = addToggle(rx, fy, "Apply on launch (default)", preset.isDefault);
         cbAutoSave = addToggle(rx, fy + 20, "Auto-save this preset on exit", preset.autoSaveOnExit);
+
+        // If this is the default preset, lock all category checkboxes ON and
+        // disable the default/auto-save toggles (they are always forced on).
+        if (pm.isDefaultPreset(preset)) {
+            cbVideo.active = false;
+            cbSound.active = false;
+            cbControls.active = false;
+            cbLanguage.active = false;
+            cbAccessibility.active = false;
+            cbChat.active = false;
+            cbResourcePacks.active = false;
+            cbModConfigs.active = false;
+            cbDefault.active = false;
+            cbAutoSave.active = false;
+        }
 
         // ---- Bottom buttons ----
         int cx = this.width / 2;
@@ -254,6 +269,12 @@ public class PresetEditScreen extends Screen {
         preset.perModConfigToggles = new LinkedHashMap<>(modToggles);
         preset.autoSaveOnExit = cbAutoSave.isChecked();
 
+        // If this is the default preset, re-enforce all constraints regardless
+        // of widget state (the checkboxes are locked, but be defensive).
+        if (pm.isDefaultPreset(preset)) {
+            preset.enforceDefaultConstraints();
+        }
+
         // Capture the current settings into the preset.
         try {
             ConfigPresetsMod.getCaptureHandler().capture(preset);
@@ -270,7 +291,8 @@ public class PresetEditScreen extends Screen {
         // Default flag is exclusive and managed by the manager.
         if (cbDefault.isChecked()) {
             pm.setDefault(preset);
-        } else if (preset.isDefault) {
+        } else if (preset.isDefault && !pm.isDefaultPreset(preset)) {
+            // Only clear the flag if this is NOT the built-in default preset.
             pm.clearDefault();
             preset.isDefault = false;
         }
@@ -290,7 +312,10 @@ public class PresetEditScreen extends Screen {
 
     @Override
     public void render(DrawContext context, int mouseX, int mouseY, float delta) {
-        this.renderBackground(context, mouseX, mouseY, delta);
+        // NOTE (1.21.11): do NOT call this.renderBackground(...) here.
+        // Screen#render already renders the blurred background, and the
+        // 1.21.11 render backend throws "Can only blur once per frame" if
+        // the blur is applied twice. super.render(...) handles it.
         super.render(context, mouseX, mouseY, delta);
 
         context.drawTextWithShadow(this.textRenderer, this.title, 20, 20, 0xFFFFFFFF);
@@ -308,8 +333,15 @@ public class PresetEditScreen extends Screen {
 
         // Right column header.
         int rx = this.width / 2 + 14;
-        context.drawText(this.textRenderer, Text.literal("Include in preset:").formatted(Formatting.GRAY),
-                rx, 32, 0xFFAAAAAA, false);
+        if (pm.isDefaultPreset(preset)) {
+            context.drawText(this.textRenderer,
+                    Text.literal("Include in preset: (all locked \u2014 Default)")
+                            .formatted(Formatting.GOLD),
+                    rx, 32, 0xFFFFD700, false);
+        } else {
+            context.drawText(this.textRenderer, Text.literal("Include in preset:").formatted(Formatting.GRAY),
+                    rx, 32, 0xFFAAAAAA, false);
+        }
 
         // Mod config sub-list (only meaningful when "Mod configs" is on).
         boolean modsActive = cbModConfigs != null && cbModConfigs.isChecked();

@@ -64,7 +64,10 @@ class ConfirmScreen extends Screen {
 
     @Override
     public void render(DrawContext context, int mouseX, int mouseY, float delta) {
-        this.renderBackground(context, mouseX, mouseY, delta);
+        // NOTE (1.21.11): do NOT call this.renderBackground(...) here.
+        // Screen#render already renders the blurred background, and the
+        // 1.21.11 render backend throws "Can only blur once per frame" if
+        // the blur is applied twice. super.render(...) handles it.
         super.render(context, mouseX, mouseY, delta);
         context.drawCenteredTextWithShadow(this.textRenderer, message,
                 this.width / 2, this.height / 2 - 24, 0xFFFFFFFF);
@@ -160,7 +163,10 @@ class ExportScreen extends Screen {
 
     @Override
     public void render(DrawContext context, int mouseX, int mouseY, float delta) {
-        this.renderBackground(context, mouseX, mouseY, delta);
+        // NOTE (1.21.11): do NOT call this.renderBackground(...) here.
+        // Screen#render already renders the blurred background, and the
+        // 1.21.11 render backend throws "Can only blur once per frame" if
+        // the blur is applied twice. super.render(...) handles it.
         super.render(context, mouseX, mouseY, delta);
         context.drawCenteredTextWithShadow(this.textRenderer, this.title, this.width / 2, 40, 0xFFFFFFFF);
         context.drawCenteredTextWithShadow(this.textRenderer,
@@ -268,7 +274,10 @@ class ImportScreen extends Screen {
 
     @Override
     public void render(DrawContext context, int mouseX, int mouseY, float delta) {
-        this.renderBackground(context, mouseX, mouseY, delta);
+        // NOTE (1.21.11): do NOT call this.renderBackground(...) here.
+        // Screen#render already renders the blurred background, and the
+        // 1.21.11 render backend throws "Can only blur once per frame" if
+        // the blur is applied twice. super.render(...) handles it.
         super.render(context, mouseX, mouseY, delta);
         context.drawCenteredTextWithShadow(this.textRenderer, this.title, this.width / 2, 32, 0xFFFFFFFF);
 
@@ -378,7 +387,10 @@ class RestartPromptScreen extends Screen {
 
     @Override
     public void render(DrawContext context, int mouseX, int mouseY, float delta) {
-        this.renderBackground(context, mouseX, mouseY, delta);
+        // NOTE (1.21.11): do NOT call this.renderBackground(...) here.
+        // Screen#render already renders the blurred background, and the
+        // 1.21.11 render backend throws "Can only blur once per frame" if
+        // the blur is applied twice. super.render(...) handles it.
         super.render(context, mouseX, mouseY, delta);
         context.drawCenteredTextWithShadow(this.textRenderer, LINE_1,
                 this.width / 2, this.height / 2 - 28, 0xFFFFFFFF);
