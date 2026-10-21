@@ -37,7 +37,7 @@ public abstract class PauseScreenMixin extends Screen {
                 Component.literal("Config Presets"),
                 b -> {
                     if (this.minecraft != null) {
-                        this.minecraft.setScreen(new PresetScreen((Screen) (Object) this));
+                        this.minecraft.gui.setScreen(new PresetScreen((Screen) (Object) this));
                     }
                 });
         presetsButton.setTooltip(Tooltip.create(Component.literal("Config Presets")));

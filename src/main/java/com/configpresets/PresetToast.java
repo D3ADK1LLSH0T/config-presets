@@ -42,12 +42,12 @@ public class PresetToast implements Toast {
             return;
         }
         Minecraft client = Minecraft.getInstance();
-        if (client == null || client.getToastManager() == null) {
+        if (client == null || client.gui.toastManager() == null) {
             return;
         }
         Component title = Component.literal("Config Presets").withStyle(ChatFormatting.GREEN, ChatFormatting.BOLD);
         Component desc = Component.literal("Applied: " + presetName).withStyle(ChatFormatting.WHITE);
-        client.getToastManager().addToast(new PresetToast(title, desc));
+        client.gui.toastManager().addToast(new PresetToast(title, desc));
     }
 
     /** Generic informational toast (e.g. saved / imported / exported). */
@@ -56,10 +56,10 @@ public class PresetToast implements Toast {
             return;
         }
         Minecraft client = Minecraft.getInstance();
-        if (client == null || client.getToastManager() == null) {
+        if (client == null || client.gui.toastManager() == null) {
             return;
         }
-        client.getToastManager().addToast(new PresetToast(
+        client.gui.toastManager().addToast(new PresetToast(
                 Component.literal("Config Presets").withStyle(ChatFormatting.AQUA, ChatFormatting.BOLD),
                 Component.literal(line).withStyle(ChatFormatting.WHITE)));
     }

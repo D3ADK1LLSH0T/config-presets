@@ -513,8 +513,8 @@ public class CaptureHandler {
                 client.resizeGui();
                 // Rebuild the world render so render distance / graphics changes show
                 // up immediately when a level is loaded.
-                if (client.level != null && client.levelRenderer != null) {
-                    client.levelRenderer.allChanged();
+                if (client.level != null && client.levelExtractor != null) {
+                    client.levelExtractor.allChanged();
                 }
             }
         } catch (Throwable t) {

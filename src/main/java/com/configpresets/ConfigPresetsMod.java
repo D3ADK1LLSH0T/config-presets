@@ -11,7 +11,6 @@ import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.client.KeyMapping;
 import net.minecraft.client.Minecraft;
 import net.minecraft.resources.Identifier;
-import org.lwjgl.glfw.GLFW;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -101,8 +100,8 @@ public class ConfigPresetsMod implements ClientModInitializer {
     private void registerKeybinds() {
         openScreenKey = KeyMappingHelper.registerKeyMapping(new KeyMapping(
                 "key.configpresets.open_screen",
-                InputConstants.Type.KEYSYM,
-                GLFW.GLFW_KEY_P,
+                InputConstants.Type.KEYBOARD,
+                InputConstants.KEY_P,
                 KEY_CATEGORY
         ));
     }
@@ -191,7 +190,7 @@ public class ConfigPresetsMod implements ClientModInitializer {
             return;
         }
         try {
-            client.setScreen(new PresetScreen(client.screen));
+            client.gui.setScreen(new PresetScreen(client.gui.screen()));
         } catch (Throwable t) {
             LOGGER.error("Failed to open Config Presets screen", t);
         }
