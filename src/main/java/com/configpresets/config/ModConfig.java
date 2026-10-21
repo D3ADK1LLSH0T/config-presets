@@ -209,7 +209,7 @@ public class ModConfig {
         try {
             Button button = Button.builder(Component.literal("Presets"), b -> {
                         Minecraft mc = Minecraft.getInstance();
-                        mc.setScreen(new PresetScreen(screen));
+                        mc.gui.setScreen(new PresetScreen(screen));
                     })
                     .bounds(screen.width - 12 - 90, screen.height - 26, 90, 20)
                     .tooltip(Tooltip.create(Component.literal("Open the Config Presets manager")))

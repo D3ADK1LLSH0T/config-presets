@@ -191,7 +191,7 @@ public class ConfigPresetsMod implements ClientModInitializer {
             return;
         }
         try {
-            client.setScreen(new PresetScreen(client.screen));
+            client.gui.setScreen(new PresetScreen(client.gui.screen()));
         } catch (Throwable t) {
             LOGGER.error("Failed to open Config Presets screen", t);
         }
