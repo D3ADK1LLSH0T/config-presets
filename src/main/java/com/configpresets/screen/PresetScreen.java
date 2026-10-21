@@ -163,12 +163,12 @@ public class PresetScreen extends Screen {
         bx = addAction(bx, by, 60, "Export", b -> {
             Preset sel = selected();
             if (sel != null && this.minecraft != null) {
-                this.minecraft.setScreen(new ExportScreen(this, sel));
+                this.minecraft.gui.setScreen(new ExportScreen(this, sel));
             }
         }, hasSelection()) + gap;
         addAction(bx, by, 60, "Import", b -> {
             if (this.minecraft != null) {
-                this.minecraft.setScreen(new ImportScreen(this));
+                this.minecraft.gui.setScreen(new ImportScreen(this));
             }
         }, true);
 
@@ -179,7 +179,7 @@ public class PresetScreen extends Screen {
         // Config (settings) button (bottom-right) -> opens this mod's Cloth config screen.
         this.addRenderableWidget(Button.builder(Component.literal("Config"), b -> {
             if (this.minecraft != null) {
-                this.minecraft.setScreen(ModConfig.createConfigScreen(this));
+                this.minecraft.gui.setScreen(ModConfig.createConfigScreen(this));
             }
         }).bounds(this.width - 12 - 96, this.height - 30, 96, 20).build());
     }
@@ -309,7 +309,7 @@ public class PresetScreen extends Screen {
             // the next launch, so offer to restart the game.
             if (result.modConfigsRestored() && ModConfig.get().showRestartWarning
                     && this.minecraft != null) {
-                this.minecraft.setScreen(new RestartPromptScreen(this));
+                this.minecraft.gui.setScreen(new RestartPromptScreen(this));
             } else {
                 PresetToast.showApplied(sel.name);
             }
@@ -324,7 +324,7 @@ public class PresetScreen extends Screen {
         if (sel == null || this.minecraft == null || pm.isDefaultPreset(sel)) {
             return;
         }
-        this.minecraft.setScreen(new ConfirmScreen(this,
+        this.minecraft.gui.setScreen(new ConfirmScreen(this,
                 Component.literal("Delete preset \"" + sel.name + "\"?"),
                 () -> {
                     pm.delete(sel.name);
@@ -347,7 +347,7 @@ public class PresetScreen extends Screen {
 
     private void openEditor(Preset preset, boolean isNew) {
         if (this.minecraft != null) {
-            this.minecraft.setScreen(new PresetEditScreen(this, preset, isNew));
+            this.minecraft.gui.setScreen(new PresetEditScreen(this, preset, isNew));
         }
     }
 
@@ -511,7 +511,7 @@ public class PresetScreen extends Screen {
     @Override
     public void onClose() {
         if (this.minecraft != null) {
-            this.minecraft.setScreen(parent);
+            this.minecraft.gui.setScreen(parent);
         }
     }
 

@@ -1,0 +1,12 @@
+# Normalize line endings: store LF in the repo, check out LF on every platform
+# (prevents "LF will be replaced by CRLF" warnings on Windows and keeps gradlew/CI scripts intact).
+* text=auto eol=lf
+
+# Windows batch files must stay CRLF
+*.bat text eol=crlf
+
+# Binary files - never touch line endings
+*.jar binary
+*.png binary
+*.ico binary
+*.zip binary
